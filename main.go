@@ -33,7 +33,10 @@ func (t Training) distance() float64 {
 // meanSpeed возвращает среднюю скорость бега или ходьбы.
 func (t Training) meanSpeed() float64 {
 	// вставьте ваш код ниже
-	return (t.distance() / t.Duration.Hours())
+	if t.Duration.Hours() == 0 {
+		return 0 // Возврат 0 для случая деления на 0
+	}
+	return t.distance() / t.Duration.Hours()
 }
 
 // Calories возвращает количество потраченных килокалорий на тренировке.
@@ -109,8 +112,16 @@ func (r Running) Calories() float64 {
 // Это переопределенный метод TrainingInfo() из Training.
 func (r Running) TrainingInfo() InfoMessage {
 	// вставьте ваш код ниже
-	return InfoMessage{TrainingType: r.Training.TrainingType, Duration: r.Training.Duration, Distance: r.Training.distance(), Speed: r.Training.meanSpeed(), Calories: r.Training.Calories()}
+	baseInfo := r.Training.TrainingInfo() // Используем метод TrainingInfo() из структуры Training
 
+	// Возвращаем информацию о тренировке с добавлением специфики для бега
+	return InfoMessage{
+		TrainingType: baseInfo.TrainingType,
+		Duration:     baseInfo.Duration,
+		Distance:     r.distance(),  // вызываем метод distance() у текущей структуры
+		Speed:        r.meanSpeed(), // вызываем метод meanSpeed() у текущей структуры
+		Calories:     r.Calories(),  // вызываем метод Calories() у текущей структуры
+	}
 }
 
 // Константы для расчета потраченных килокалорий при ходьбе.
@@ -185,8 +196,19 @@ func (s Swimming) Calories() float64 {
 // TrainingInfo returns info about swimming training.
 // Это переопределенный метод TrainingInfo() из Training.
 func (s Swimming) TrainingInfo() InfoMessage {
-	// вставьте ваш код ниже
-	return s.Training.TrainingInfo()
+	// Вычисление параметров для Swimming
+	distance := s.Training.distance() // метод distance для Swimming
+	speed := s.Training.meanSpeed()   // метод meanSpeed для Swimming
+	calories := s.Training.Calories() // метод Calories для Swimming
+
+	// Формируем результат с учетом специфики плавания
+	return InfoMessage{
+		TrainingType: s.Training.TrainingType,
+		Duration:     s.Training.Duration,
+		Distance:     distance,
+		Speed:        speed,
+		Calories:     calories,
+	}
 }
 
 // ReadData возвращает информацию о проведенной тренировке.
@@ -198,6 +220,7 @@ func ReadData(training CaloriesCalculator) string {
 	info.Calories = calories
 
 	return fmt.Sprint(info)
+
 }
 func main() {
 
